@@ -1,0 +1,20 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+<MyServices>
+    <header>
+        <Version>1.0</Version>
+        <SrvType>XXX</SrvType>
+        <SrvName>YYY</SrvName>
+        <SrcApp>Z1</SrcApp>
+        <TargetApp>Z2</TargetApp>
+        <Timestamp>2019-09-26T09:01:43.156+04:00</Timestamp>
+        <SrcMsgId>SrcMsgId_0000000</SrcMsgId>
+        <TrackingId>TrackingId_0000000</TrackingId>
+    </header>
+    <body>
+        <srv_req>
+            <req_xxx>
+                <param>yyy</param>
+            </req_xxx>
+        </srv_req>
+    </body>
+</MyServices>

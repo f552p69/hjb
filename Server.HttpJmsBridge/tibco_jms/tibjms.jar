@@ -1,0 +1,12 @@
+I have used tibjms.jar (392.213 bytes):
+    Manifest-Version: 1.0
+    Implementation-Vendor: TIBCO Software Inc.
+    Implementation-Title: com/tibco/tibjms
+    Implementation-Version: 8.1.0
+    Specification-Vendor: TIBCO Software Inc.
+    Created-By: 1.7.0_04 (Oracle Corporation)
+    Specification-Title: TIBCO Enterprise Message Service
+    Specification-Version: 8.1.0
+    Main-Class: com.tibco.tibjms.version
+
+Please use tibjms.jar from own distributive of Tibco EMS
