@@ -12,17 +12,17 @@ exit
 set TIBEMS_JAVA=.\tibco_jms
 call :if_exist_add_to_CLASSPATH %TIBEMS_JAVA%\jms-2.0.jar
 call :if_exist_add_to_CLASSPATH %TIBEMS_JAVA%\tibjms.jar
-call :if_exist_add_to_CLASSPATH %TIBEMS_JAVA%\tibjmsufo.jar
-call :if_exist_add_to_CLASSPATH %TIBEMS_JAVA%\tibjmsadmin.jar
-call :if_exist_add_to_CLASSPATH %TIBEMS_JAVA%\tibcrypt.jar
-call :if_exist_add_to_CLASSPATH %TIBEMS_JAVA%\slf4j-api-1.4.2.jar
-call :if_exist_add_to_CLASSPATH %TIBEMS_JAVA%\slf4j-simple-1.4.2.jar
+::call :if_exist_add_to_CLASSPATH %TIBEMS_JAVA%\tibjmsufo.jar
+::call :if_exist_add_to_CLASSPATH %TIBEMS_JAVA%\tibjmsadmin.jar
+::call :if_exist_add_to_CLASSPATH %TIBEMS_JAVA%\tibcrypt.jar
+::call :if_exist_add_to_CLASSPATH %TIBEMS_JAVA%\slf4j-api-1.4.2.jar
+::call :if_exist_add_to_CLASSPATH %TIBEMS_JAVA%\slf4j-simple-1.4.2.jar
 
 
 set JAVA_PROJECT=hjbServer
 ::"%JAVA_HOME%\bin\javac.exe" -Xlint:deprecation -cp "%CLASSPATH%" *.java
 ::"%JAVA_HOME%\bin\javac.exe" -cp "%CLASSPATH%" *.java
-"%JAVA_HOME%\bin\javac.exe" -Xlint:-deprecation -cp "%CLASSPATH%" *.java
+"%JAVA_HOME%\bin\javac.exe" -source 7 -target 7 -Xlint:-deprecation -cp "%CLASSPATH%" *.java
 
 copy nul %TEMP%\MANIFEST.MF > nul
 ::echo Manifest-Version: 1.0>>%TEMP%\MANIFEST.MF
