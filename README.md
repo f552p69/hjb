@@ -1,5 +1,7 @@
-HJB = Http to Jms Bridge = v0.03 24 June 2020 = f552p69@gmail.com
-=================================================================
+HJB = Http to Jms (Tibco EMS) Bridge
+====================================
+**Please attention: External libs tibjms.jar jms-2.0.jar into .\tibco_jms must be included by yourselves.**
+
 Usage:
 
         > java -jar hjbServer.jar \[port\]
@@ -33,14 +35,16 @@ After start HJB:
 All parameters must be provided thru HTTP header or thru URL:
 
 <h5>HTTP header</h5>
+
         curl --request POST --header @header.txt --data-binary @body.txt http://localhost:9999 > response.log
 header.txt:
-    JMS-USR: ems_user
-    JMS-PSW: ems_password
-    JMS-URL: 10.10.10.10:60010
-    JMS-QU1: $tmp$.queue.send
-    JMS-QU2: $tmp$.queue.recv
-    JMS-TIM: 3000
+
+        JMS-USR: ems_user
+        JMS-PSW: ems_password
+        JMS-URL: 10.10.10.10:60010
+        JMS-QU1: $tmp$.queue.send
+        JMS-QU2: $tmp$.queue.recv
+        JMS-TIM: 3000
 
 <h5>URL</h5>
 
