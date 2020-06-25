@@ -4,7 +4,7 @@ HJB = Http to Jms (Tibco EMS) Bridge
 
 Usage:
 
-        > java -jar hjbServer.jar \[port\]
+        > java -jar hjbServer.jar [port]
 
 By default hjbServer will be started at 9999 port:
 
