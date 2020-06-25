@@ -36,7 +36,7 @@ All parameters must be provided thru HTTP header or thru URL:
 
 <h5>HTTP header</h5>
 
-        curl --request POST --header @header.txt --data-binary @body.txt http://localhost:9999 > response.log
+        > curl --request POST --header @header.txt --data-binary @body.txt http://localhost:9999 > response.log
 header.txt:
 
         JMS-USR: ems_user
@@ -48,7 +48,7 @@ header.txt:
 
 <h5>URL</h5>
 
-        curl --request GET --data-binary @body.txt http://localhost:9999/?JMS-USR=ems_user&JMS-PSW=ems_password&JMS-URL=10.10.10.10:60010&JMS-QU1=$tmp$.queue.send&&JMS-QU2=$tmp$.queue.recv&JMS-TIM=3000 > response2.log
+        > curl --request GET --data-binary @body.txt http://localhost:9999/?JMS-USR=ems_user&JMS-PSW=ems_password&JMS-URL=10.10.10.10:60010&JMS-QU1=$tmp$.queue.send&&JMS-QU2=$tmp$.queue.recv&JMS-TIM=3000 > response2.log
 
         
 
