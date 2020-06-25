@@ -1,21 +1,28 @@
 HJB = Http to Jms Bridge = v0.03 24 June 2020 = f552p69@gmail.com
 =================================================================
 Usage:
-        java -jar hjbServer.jar \[port\]
+
+        > java -jar hjbServer.jar \[port\]
 
 By default hjbServer will be started at 9999 port:
+
         > java -jar hjbServer.jar
 Server started on port: 9999
+
         > netstat -a
         Active Connections
           Proto  Local Address          Foreign Address        State
           TCP    0.0.0.0:9999           MYPC:0                 LISTENING
 
 If the port will be occupied already you will receive the message and program will be termenated:
+
         > java -jar hjbServer.jar
-I means port 9999 is blocked.
+        Port 9999 is blocked.
+
+So provide alternative port number as parameter:
+
         > java -jar hjbServer.jar 9998
-Server started on port: 9998
+It means HJB started on port: 9998
 
 After start HJB:
 * Listens localhost:port (by default port is 9999)
