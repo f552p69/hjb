@@ -16,7 +16,7 @@ Server started on port: 9999
           Proto  Local Address          Foreign Address        State
           TCP    0.0.0.0:9999           MYPC:0                 LISTENING
 
-If the port will be occupied already you will receive the message and program will be termenated:
+If the port will be occupied already you will receive the message and program will be terminated:
 
         > java -jar hjbServer.jar
         Port 9999 is blocked.
