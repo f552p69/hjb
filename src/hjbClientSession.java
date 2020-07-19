@@ -2,6 +2,7 @@
 001 = 200412 = Initial workable version. Getting params from HTTP header.
 002 = 200419 = Adding ability to provided params thru URL.
 003 = 200624 = Fixing issue with providing params thru URL.
+004 = 200629 = Extended logging functionality
 */
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,25 +18,35 @@ import java.util.HashMap;
 import java.util.UUID;
 import javax.jms.*;
 import java.net.URLDecoder;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class hjbClientSession implements Runnable {
-    private Socket socket;
-    private InputStream socket_stream_request = null;
-    private OutputStream socket_stream_response = null;
+    private Socket __socket;
+    private InputStream __socket_stream_request = null;
+    private OutputStream __socket_stream_response = null;
+    private long __requestCount;
 
-    public hjbClientSession(Socket socket) throws IOException {
-        this.socket = socket;
-        socket_stream_request = socket.getInputStream();
-        socket_stream_response = socket.getOutputStream();
+    public hjbClientSession(Socket socket, long requestCount) throws IOException {
+        this.__socket = socket;
+        __socket_stream_request = socket.getInputStream();
+        __socket_stream_response = socket.getOutputStream();
+        __requestCount = requestCount;
     }
 
     @Override
     public void run() {
         try {
+            if(__requestCount >= 0) {
+                System.out.println("==================================================");
+                System.out.println(__requestCount);
+                System.out.println("==================================================");
+            }
+
             String request[] = readRequest(); // request[0] == header, request[1] == body
             System.out.println("Header:\n" + request[0] + "\n");
             System.out.println("Body:\n" + request[1] + "\n");
-            
+
             // parse HTTP header parameters
             Map<String, String> ConnectivityParams = new HashMap<>();
             String[] headerLines = request[0].replace("\r\n","\n").replace("\r","\n").split("\n");
@@ -46,7 +57,7 @@ public class hjbClientSession implements Runnable {
                     ConnectivityParams.put(pair[0],pair[1]);
                 }
             }
-            // parse parameters in URL 
+            // parse parameters in URL
             pair = headerLines[0].split("\\?", 2); // Remove leading /?
             if (pair.length == 2) {
                 pair = pair[1].split(" ", 2); // Remove trailing HTTP/1.1
@@ -59,22 +70,25 @@ public class hjbClientSession implements Runnable {
                 }
             }
             System.out.println("*** Params:\n" + ConnectivityParams.entrySet() + "\n");
-            
-            
+
             String[] mandatoryParams={"JMS-USR","JMS-PSW","JMS-URL","JMS-QU1"};
             String MandatoryParamsNotProvided="";
             for (String mandatoryParam : mandatoryParams) {
                 if(!ConnectivityParams.containsKey(mandatoryParam)) {
                     MandatoryParamsNotProvided+=mandatoryParam + " doesn't provided\n";
                 } else {
-                    System.out.println("*** Param " + mandatoryParam + "='" + ConnectivityParams.get(mandatoryParam) + "'\n");
+                    System.out.println("*** Param " + mandatoryParam + "='" + ConnectivityParams.get(mandatoryParam) + "'");
                 }
             }
 
             if(MandatoryParamsNotProvided.isEmpty()) {
 ////////////////////////////////////////////////////////////////////////////////
                 String Response;
-                String status_code="200 OK";
+                String status_code;
+                String logFName;
+
+                status_code="200 OK";
+                logFName = String.format("%08d", __requestCount);
 
                 ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(ConnectivityParams.get("JMS-URL"));
                 try (JMSContext context= factory.createContext(ConnectivityParams.get("JMS-USR"), ConnectivityParams.get("JMS-PSW"));) {
@@ -82,35 +96,73 @@ public class hjbClientSession implements Runnable {
                     try {
                         String queue1name = ConnectivityParams.get("JMS-QU1");
                         Queue queue1 = context.createQueue(queue1name);
-                        System.out.println("*** Send to: " + queue1.getQueueName() + "\n");
+                        System.out.println("*** Sending to: " + queue1.getQueueName());
 
-                        String queue2name = ConnectivityParams.getOrDefault("JMS-QU2", null);
-                        if (queue2name == null) {
+                        String queue2name = ConnectivityParams.getOrDefault("JMS-QU2", "");
+                        if (queue2name.isEmpty()) {
                             queue2 = context.createTemporaryQueue();
                         } else {
                             queue2 = context.createQueue(queue2name);
                         }
-                        System.out.println("*** Receive from: " + queue2.getQueueName() + "\n");
+                        System.out.println("*** Receiving from: " + queue2.getQueueName());
 
+                        ////////////////////////////////////////////////////////////////////////////
+                        if(__requestCount >= 0) {
+                            String requestUID = ConnectivityParams.getOrDefault("JMS-UID", "");
+                            if(!requestUID.isEmpty()) {
+                                logFName += "." + requestUID;
+                            }
+                            try {
+                                String dstFile;
+                                dstFile = logFName + ".header"; System.out.println("Saving " + dstFile + "...");Files.write(Paths.get(dstFile), request[0].getBytes());
+                                dstFile = logFName + ".request";System.out.println("Saving " + dstFile + "...");Files.write(Paths.get(dstFile), request[1].getBytes());
+
+                            } catch (IOException e) {
+                                System.out.println("EXCEPTION: Request was not saved");
+                                e.printStackTrace();
+                                Response = e.toString();
+                                status_code="500 Internal Server Error";
+                            }
+                        }
+                        ////////////////////////////////////////////////////////////////////////////
+
+                        System.out.println("Sending...");
                         TextMessage requestMessage = context.createTextMessage();
                         requestMessage.setText(request[1]);
                         requestMessage.setJMSReplyTo(queue2);
                         context.createProducer().send(queue1, requestMessage);
+                        System.out.println("...Completed");
 
                     } catch (Exception e) {
+                        System.out.println("EXCEPTION: During sending");
+                        e.printStackTrace();
                         Response = e.toString();
                         status_code="501 Not Implemented";
                     } finally {
                         try {
                             int timeout=Integer.parseInt(ConnectivityParams.getOrDefault("JMS-TIM", "5000"));
-                            System.out.println("*** Waiting: " + timeout + " milliseconds\n");
+                            System.out.println("*** Waiting: " + timeout + " milliseconds");
                             Response = context.createConsumer(queue2).receiveBody(String.class, timeout);
+                            ////////////////////////////////////////////////////////////////////////////
+                            if(__requestCount >= 0) {
+                                try {
+                                    String dstFile = logFName + ".response";System.out.println("Saving " + dstFile + "...");Files.write(Paths.get(dstFile), Response.getBytes());
+                                } catch (IOException e) {
+                                    System.out.println("EXCEPTION: Response was not saved");
+                                    e.printStackTrace();
+                                    Response = e.toString();
+                                    status_code="500 Internal Server Error";
+                                }
+                            }
+                            ////////////////////////////////////////////////////////////////////////////
                         } catch (Exception e) {
+                            System.out.println("EXCEPTION: Timeout");
                             Response = e.toString();
                             status_code="504 Gateway Timeout";
                         }
                     }
                 } catch (Exception e) {
+                    System.out.println("EXCEPTION: EMS connectivity details is not correct");
                     Response = e.toString();
                     status_code="502 Bad Gateway";
                 }
@@ -124,7 +176,7 @@ public class hjbClientSession implements Runnable {
             e.printStackTrace();
         } finally {
             try {
-                socket.close();
+                __socket.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -132,7 +184,7 @@ public class hjbClientSession implements Runnable {
     }
 
     private String[] readRequest() throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(socket_stream_request));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(__socket_stream_request));
         String ln = null;
 
         StringBuilder header = new StringBuilder();
@@ -171,7 +223,7 @@ public class hjbClientSession implements Runnable {
 
         System.out.println("*** Response:\n" + buffer.toString() + "\n");
 
-        PrintStream answer = new PrintStream(socket_stream_response, true, "UTF-8");
+        PrintStream answer = new PrintStream(__socket_stream_response, true, "UTF-8");
         answer.print(buffer.toString());
     }
 

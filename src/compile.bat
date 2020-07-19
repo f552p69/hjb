@@ -20,9 +20,10 @@ call :if_exist_add_to_CLASSPATH %TIBEMS_JAVA%\tibjms.jar
 
 
 set JAVA_PROJECT=hjbServer
-::"%JAVA_HOME%\bin\javac.exe" -Xlint:deprecation -cp "%CLASSPATH%" *.java
-::"%JAVA_HOME%\bin\javac.exe" -cp "%CLASSPATH%" *.java
+:: Java1.7 compatible
 "%JAVA_HOME%\bin\javac.exe" -source 7 -target 7 -Xlint:-deprecation -cp "%CLASSPATH%" *.java
+:: Current Java1.8 compatible
+::"%JAVA_HOME%\bin\javac.exe" -Xlint:-deprecation -cp "%CLASSPATH%" *.java
 
 copy nul %TEMP%\MANIFEST.MF > nul
 ::echo Manifest-Version: 1.0>>%TEMP%\MANIFEST.MF
