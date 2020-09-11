@@ -4,7 +4,7 @@ HJB = Http to Jms (Tibco EMS) Bridge
 
 Usage:
 
-        > java -jar hjbServer.jar [port]
+        > java -jar hjbServer.jar [-p<port>] [-l]
 
 By default hjbServer will be started at 9999 port:
 
@@ -23,8 +23,12 @@ If the port will be occupied already you will receive the message and program wi
 
 So provide alternative port number as parameter:
 
-        > java -jar hjbServer.jar 9998
+        > java -jar hjbServer.jar -p9998
 It means HJB started on port: 9998
+
+        > java -jar hjbServer.jar -l
+Logging is enabled
+
 
 After start HJB:
 * Listens localhost:port (by default port is 9999)
