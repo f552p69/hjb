@@ -2,31 +2,35 @@
 001 = 200412 = Initial workable version. Getting params from HTTP header.
 002 = 200419 = Adding ability to provided params thru URL.
 003 = 200624 = Fixing issue with providing params thru URL.
-004 = 200629 = Extended logging functionality
+004 = 200629 = Extended logging funtionality
+005 = 200910 = CURL "Expect: 100-continue" compartibility with POST requests > 1024 bytes 
+               CURL starts to send stream in anycases, but __reader.ready() returns False
+               Workaround fix: "%curl%" --request POST --data-binary @%1 "%url%" --header "Expect:"
 */
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
 public class hjbServer {
-    private static final int DEFAULT_PORT = 9999;
     public static void main(String[] args) {
-        System.out.println("HJB = Http to Jms Bridge = v0.04 29 June 2020 = f552p69@gmail.com");
-        System.out.println("Usage: java -jar hjbServer.jar [-p<port>] [-l]");
-        System.out.println("Listening localhost:port (by default port is 9999), sending body of HTTP POST request to the queue JMS-QU1 at JMS-USR:JMS-PSW@JMS-URL, sending back via HTTP responce from queue JMS-QU2");
-        System.out.println("Options:");
-        System.out.println("    -p<port>    = Listen <port>");
-        System.out.println("    -l          = Log all requests/responses");
-        System.out.println("Connectivity parameters must be provided thru HTTP header or thru URL:");
-        System.out.println("    Mandatory parameters:");
-        System.out.println("        JMS-USR, JMS-PSW, JMS-URL, JMS-QU1");
-        System.out.println("    Optional:");
-        System.out.println("        JMS-QU2 = Response queue, if it is not set then the temporary queue will be used),");
-        System.out.println("        JMS-TIM = Timeout, by default 5000 milliseconds");
-        System.out.println("        JMS-UID = File name for saving request/responces in separate files. By default counter of request will be used.");
+        System.out.println(
+            "HJB = Http to Jms Bridge = v0.05 11 September 2020 = f552p69@gmail.com\n" +
+            "Usage: java -jar hjbServer.jar [-p<port>] [-l]\n" +
+            "Listening localhost:port (by default port is 9999), sending body of HTTP POST request to the queue JMS-QU1 at JMS-USR:JMS-PSW@JMS-URL, sending back via HTTP responce from queue JMS-QU2\n" +
+            "Options:\n" +
+            "    -p<port>    = Listen <port>\n" +
+            "    -l          = Log all requests/responses\n" +
+            "Connectivity parameters must be provided thru HTTP header or thru URL:\n" +
+            "    Mandatory parameters:\n" +
+            "        JMS-USR, JMS-PSW, JMS-URL, JMS-QU1\n" +
+            "    Optional:\n" +
+            "        JMS-QU2 = Response queue, if it is not set then the temporary queue will be used),\n" +
+            "        JMS-TIM = Timeout, by default 5000 milliseconds\n" +
+            "        JMS-UID = File sufix to segregate groups of saved requests/responces."
+        );
         
         Boolean flagLog = false;
-        int port = DEFAULT_PORT;
+        int port = 9999; // DEFAULT_PORT; // private static final int DEFAULT_PORT = 9999;
         
         for (int i=0; i < args.length; i++) {
             if (args[i].charAt(0) != '-') {
@@ -51,7 +55,7 @@ public class hjbServer {
         try {
             serverSocket = new ServerSocket(port);
             System.out.println("*** Server started on port: " + serverSocket.getLocalPort());
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.out.println("FATAL: Port " + port + " is blocked.");
             System.exit(-1);
         }
@@ -63,7 +67,7 @@ public class hjbServer {
                 if( flagLog ) requestCount++;
                 hjbClientSession session = new hjbClientSession(clientSocket, requestCount);
                 new Thread(session).start();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 System.out.println("FATAL: Failed to establish connection.");
                 System.out.println(e.getMessage());
                 System.exit(-1);

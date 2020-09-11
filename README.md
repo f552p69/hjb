@@ -1,6 +1,6 @@
 HJB = Http to Jms (Tibco EMS) Bridge
 ====================================
-**Please pay attention: External libs tibjms.jar jms-2.0.jar into .\tibco_jms must be included by yourselves.**
+**Please pay attention: External libs tibjms.jar, jms-2.0.jar in .\tibco_jms must be included by yourselves.**
 
 Usage:
 
